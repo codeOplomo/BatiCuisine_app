@@ -13,6 +13,13 @@ public class Workforce extends Component {
         this.workerProductivity = workerProductivity;
     }
 
+    @Override
+    public double calculateCost() {
+        double workforceCost = (hourlyRate * workHours) * workerProductivity;
+        workforceCost += workforceCost * getTvaRate(); // Add TVA
+        return workforceCost;
+    }
+
     // Getters and Setters
     public double getHourlyRate() {
         return hourlyRate;
@@ -26,4 +33,3 @@ public class Workforce extends Component {
         return workerProductivity;
     }
 }
-

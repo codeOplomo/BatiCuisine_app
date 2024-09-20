@@ -1,8 +1,8 @@
 package com.baticuisine.models.enumerations;
 
 public enum ProjectState {
-    DOING,
-    DONE,
+    ONGOING,
+    COMPLETED,
     CANCELED
 }
 

@@ -1,17 +1,17 @@
 // Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
 // then press Enter. You can now see whitespace characters in your code.
+import com.baticuisine.config.ApplicationFactory;
+import com.baticuisine.utils.menus.MenuFactory;
+import com.baticuisine.utils.menus.submenus.MainMenuImpl;
 public class Main {
     public static void main(String[] args) {
-        // Press Alt+Entrée with your caret at the highlighted text to see how
-        // IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
 
-        // Press Maj+F10 or click the green arrow button in the gutter to run the code.
-        for (int i = 1; i <= 5; i++) {
+        System.out.println("=== Bienvenue dans l'application de gestion des projets de rénovation de cuisines ===");
 
-            // Press Maj+F9 to start debugging your code. We have set one breakpoint
-            // for you, but you can always add more by pressing Ctrl+F8.
-            System.out.println("i = " + i);
-        }
+        ApplicationFactory config = new ApplicationFactory();
+
+        MainMenuImpl mainMenu = MenuFactory.createMainMenu(config.getProjectRepository(), config.getClientRepository());
+        mainMenu.showMenu();
+
     }
 }
