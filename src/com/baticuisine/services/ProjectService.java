@@ -1,11 +1,11 @@
 package com.baticuisine.services;
 
-import com.baticuisine.models.Client;
-import com.baticuisine.models.Project;
+import com.baticuisine.models.*;
 import com.baticuisine.models.enumerations.ProjectState;
 import com.baticuisine.repository.ClientRepository;
 import com.baticuisine.repository.ProjectRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,7 +23,7 @@ public class ProjectService {
         Optional<Client> clientOpt = clientRepo.findByName(name); // Add this method in ClientRepository
         return clientOpt.orElse(null);
     }
-    public Client addClient(String name, String phone, String address, boolean isPro, String projectName, double area) {
+    public Client addClient(String name, String phone, String address, boolean isPro, String projectName, double area, List<Material> materials, List<Workforce> workforces) {
         Client client = new Client(name, phone, address, isPro);
         ProjectState projectState = ProjectState.ONGOING;
         double profitMargin = 0.2;
@@ -31,12 +31,14 @@ public class ProjectService {
         // Create a new project associated with the client
         Project project = new Project(projectName, profitMargin, area, projectState);
 
-        // Save both client and project together in the repository
-        Optional<Client> savedClient = clientRepo.addClientAndProject(client, project);
+        // Save both client and project along with materials and workforces in the repository
+        Optional<Client> savedClient = clientRepo.addClientProjectAndComponents(client, project, materials, workforces);
 
         // Return the saved client or null if there was an issue
         return savedClient.orElse(null);
     }
+
+
 
     public Project addProjectForClient(Client client, String projectName, double area) {
         ProjectState projectState = ProjectState.ONGOING;
@@ -47,12 +49,12 @@ public class ProjectService {
         project.setClientId(client.getId());
 
         // Save the project to the database
-        projectRepo.addProject(project);
+        Optional<Project> savedProject = projectRepo.addProject(project);
 
         // Optionally add the project to the client's list for in-memory tracking
         client.addProject(project);
 
-        return project; // Return the project if needed
+        return savedProject.orElse(null); // Return the project if needed
     }
 
     public List<Project> getAllProjects() {

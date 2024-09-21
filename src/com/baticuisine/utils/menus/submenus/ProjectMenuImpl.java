@@ -2,9 +2,14 @@ package com.baticuisine.utils.menus.submenus;
 
 import com.baticuisine.models.Client;
 import com.baticuisine.models.Project;
+import com.baticuisine.models.Material;
+import com.baticuisine.models.Workforce;
 import com.baticuisine.services.ProjectService;
 import com.baticuisine.utils.inputs.InputHandler;
 import com.baticuisine.utils.menus.Menu;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProjectMenuImpl implements Menu {
 
@@ -28,24 +33,13 @@ public class ProjectMenuImpl implements Menu {
         if (choice == 1) {
             client = searchExistingClient();
             if (client != null) {
-                // If client exists, ask if user wants to add a new project
                 String addProject = inputHandler.getStringInput("Souhaitez-vous ajouter un nouveau projet pour ce client ? (y/n) : ");
                 if (addProject.equalsIgnoreCase("y")) {
                     addNewProjectForClient(client);
                 }
             }
         } else if (choice == 2) {
-            String name = inputHandler.getStringInput("Entrez le nom du client : ");
-            String phone = inputHandler.getStringInput("Entrez le numéro de téléphone : ");
-            String address = inputHandler.getStringInput("Entrez l'adresse : ");
-            boolean isPro = inputHandler.getBooleanInput("Est-ce un client professionnel ? (true/false) : ");
-
-            // Collect project information at the same time
-            String projectName = inputHandler.getStringInput("Entrez le nom du projet : ");
-            double area = inputHandler.getDoubleInput("Entrez la surface de la cuisine (en m²) : ");
-
-            // Add both client and project in one go
-            client = projectService.addClient(name, phone, address, isPro, projectName, area);
+            client = addNewClientAndProject();
         }
 
         if (client != null) {
@@ -73,12 +67,24 @@ public class ProjectMenuImpl implements Menu {
         return null;
     }
 
-    private void addNewProjectForClient(Client client) {
-        // Collect the project details for the existing client
+    private Client addNewClientAndProject() {
+        String name = inputHandler.getStringInput("Entrez le nom du client : ");
+        String phone = inputHandler.getStringInput("Entrez le numéro de téléphone : ");
+        String address = inputHandler.getStringInput("Entrez l'adresse : ");
+        boolean isPro = inputHandler.getBooleanInput("Est-ce un client professionnel ? (true/false) : ");
         String projectName = inputHandler.getStringInput("Entrez le nom du projet : ");
         double area = inputHandler.getDoubleInput("Entrez la surface de la cuisine (en m²) : ");
 
-        // Add the project for the client
+        List<Material> materials = addMaterials(); // Gather materials
+        List<Workforce> workforces = addWorkforce(); // Gather workforces
+
+        return projectService.addClient(name, phone, address, isPro, projectName, area, materials, workforces);
+    }
+
+    private void addNewProjectForClient(Client client) {
+        String projectName = inputHandler.getStringInput("Entrez le nom du projet : ");
+        double area = inputHandler.getDoubleInput("Entrez la surface de la cuisine (en m²) : ");
+
         Project project = projectService.addProjectForClient(client, projectName, area);
         if (project != null) {
             System.out.println("Projet ajouté avec succès pour le client " + client.getName() + " !");
@@ -87,5 +93,45 @@ public class ProjectMenuImpl implements Menu {
         }
     }
 
+    private List<Material> addMaterials() {
+        List<Material> materials = new ArrayList<>();
+        boolean continueAddingMaterials;
 
+        do {
+            String materialName = inputHandler.getStringInput("Entrez le nom du matériau : ");
+            int quantity = (int) inputHandler.getDoubleInput("Entrez la quantité de ce matériau (en unités appropriées) : "); // Ensure quantity is an int
+            double unitCost = inputHandler.getDoubleInput("Entrez le coût unitaire de ce matériau : ");
+            double transportCost = inputHandler.getDoubleInput("Entrez le coût de transport de ce matériau : ");
+            double qualityCoefficient = inputHandler.getDoubleInput("Entrez le coefficient de qualité du matériau (1.0 = standard, > 1.0 = haute qualité) : ");
+
+            Material material = new Material(materialName, "material", 0.0, unitCost, quantity, transportCost, qualityCoefficient);
+            materials.add(material);
+
+            String addAnother = inputHandler.getStringInput("Voulez-vous ajouter un autre matériau ? (y/n) : ");
+            continueAddingMaterials = addAnother.equalsIgnoreCase("y");
+        } while (continueAddingMaterials);
+
+        return materials;
+    }
+
+
+    private List<Workforce> addWorkforce() {
+        List<Workforce> workforces = new ArrayList<>();
+        boolean continueAddingWorkforce;
+
+        do {
+            String workforceType = inputHandler.getStringInput("Entrez le type de main-d'œuvre (e.g., Ouvrier de base, Spécialiste) : ");
+            double hourlyRate = inputHandler.getDoubleInput("Entrez le taux horaire de cette main-d'œuvre (€/h) : ");
+            int hoursWorked = inputHandler.getIntInput("Entrez le nombre d'heures travaillées : ");
+            double productivityFactor = inputHandler.getDoubleInput("Entrez le facteur de productivité (1.0 = standard, > 1.0 = haute productivité) : ");
+
+            Workforce workforce = new Workforce(workforceType, "workforce", 0, hourlyRate, hoursWorked, productivityFactor);
+            workforces.add(workforce);
+
+            String addAnother = inputHandler.getStringInput("Voulez-vous ajouter un autre type de main-d'œuvre ? (y/n) : ");
+            continueAddingWorkforce = addAnother.equalsIgnoreCase("y");
+        } while (continueAddingWorkforce);
+
+        return workforces;
+    }
 }

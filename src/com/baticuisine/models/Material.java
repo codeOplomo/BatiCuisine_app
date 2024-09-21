@@ -7,11 +7,12 @@ public class Material extends Component {
     private double transportCost;
     private double qualityCoefficient;
 
-    public Material(String name, String componentType, double tvaRate, double unitCost, int quantity, double transportCost) {
+    public Material(String name, String componentType, double tvaRate, double unitCost, int quantity, double transportCost, double qualityCoefficient) {
         super(name, componentType, tvaRate); // Call the constructor of the abstract Component class
         this.unitCost = unitCost;
         this.quantity = quantity;
         this.transportCost = transportCost;
+        this.qualityCoefficient = qualityCoefficient;
     }
 
     @Override
@@ -33,4 +34,9 @@ public class Material extends Component {
     public double getTransportCost() {
         return transportCost;
     }
+
+    public double getQualityCoefficient() {
+        return qualityCoefficient;
+    }
+
 }
