@@ -4,6 +4,9 @@ import com.baticuisine.models.Client;
 import com.baticuisine.models.Project;
 import com.baticuisine.models.Material;
 import com.baticuisine.models.Workforce;
+import com.baticuisine.repository.ClientRepository;
+import com.baticuisine.repository.ProjectRepository;
+import com.baticuisine.services.ClientService;
 import com.baticuisine.services.ProjectService;
 import com.baticuisine.utils.inputs.InputHandler;
 import com.baticuisine.utils.menus.Menu;
@@ -14,10 +17,12 @@ import java.util.List;
 public class ProjectMenuImpl implements Menu {
 
     private final ProjectService projectService;
+    private final ClientService clientService;
     private final InputHandler inputHandler;
 
-    public ProjectMenuImpl(ProjectService projectService) {
-        this.projectService = projectService;
+    public ProjectMenuImpl(ProjectRepository projectRepo, ClientRepository clientRepo) {
+        this.projectService = new ProjectService(projectRepo, clientRepo);
+        this.clientService = new ClientService(clientRepo);
         this.inputHandler = InputHandler.getInstance(); // Access singleton instance
     }
 
@@ -51,7 +56,7 @@ public class ProjectMenuImpl implements Menu {
 
     private Client searchExistingClient() {
         String clientName = inputHandler.getStringInput("Entrez le nom du client : ");
-        Client client = projectService.findClientByName(clientName);
+        Client client = clientService.findClientByName(clientName);
         if (client != null) {
             System.out.println("Client trouvé !");
             System.out.println("Nom : " + client.getName());

@@ -1,7 +1,10 @@
 package com.baticuisine.impl;
 
 import com.baticuisine.config.DbConnection;
+import com.baticuisine.models.Component;
+import com.baticuisine.models.Material;
 import com.baticuisine.models.Project;
+import com.baticuisine.models.Workforce;
 import com.baticuisine.models.enumerations.ProjectState;
 import com.baticuisine.repository.ProjectRepository;
 
@@ -16,6 +19,53 @@ public class ProjectRepositoryImpl implements ProjectRepository {
 
     public ProjectRepositoryImpl() {
         this.dbConnection = DbConnection.getInstance();
+    }
+
+
+    @Override
+    public List<Project> getAllProjects() {
+        List<Project> projects = new ArrayList<>();
+        String sql = "SELECT * FROM projects";
+        ComponentRepositoryImpl componentRepository = new ComponentRepositoryImpl(); // Create an instance of the component repository
+
+        try (Connection conn = dbConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                // Create project object from ResultSet
+                Project project = mapRowToProject(rs);
+
+                // Fetch components for each project
+                List<Component> components = componentRepository.fetchComponentsForProject(project.getId());
+
+                // Even if no components are found, add empty list to project
+                if (components != null && !components.isEmpty()) {
+                    project.getComponents().addAll(components); // Add components to the project
+                } else {
+                    System.out.println("No components available for project: " + project.getProjectName()); // Debugging
+                }
+
+                // Add project to list
+                projects.add(project);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return projects;
+    }
+
+
+
+    private Project mapRowToProject(ResultSet rs) throws SQLException {
+        UUID id = (UUID) rs.getObject("id");
+        String projectName = rs.getString("project_name");
+        double profitMargin = rs.getDouble("profit_margin");
+        double totalCost = rs.getDouble("total_cost");
+        double area = rs.getDouble("area");
+        ProjectState projectState = ProjectState.valueOf(rs.getString("project_state"));
+        UUID clientId = (UUID) rs.getObject("client_id");
+        return new Project(id, projectName, profitMargin, totalCost, area, projectState, clientId);
     }
 
     @Override
@@ -83,7 +133,6 @@ public class ProjectRepositoryImpl implements ProjectRepository {
             }
         }
     }
-
     @Override
     public Optional<Project> updateProject(Project project) {
         String sql = "UPDATE projects SET project_name = ?, profit_margin = ?, total_cost = ?, area = ?, project_state = CAST(? AS project_state) WHERE id = ?";
@@ -108,15 +157,6 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         return Optional.empty();  // If something goes wrong, return an empty optional
     }
 
-    private Project mapRowToProject(ResultSet rs) throws SQLException {
-        UUID id = (UUID) rs.getObject("id");
-        String projectName = rs.getString("project_name");
-        double profitMargin = rs.getDouble("profit_margin");
-        double totalCost = rs.getDouble("total_cost");
-        double area = rs.getDouble("area");
-        ProjectState projectState = ProjectState.valueOf(rs.getString("project_state"));
-        return new Project(id, projectName, profitMargin, totalCost, area, projectState);
-    }
     @Override
     public Optional<Project> findByName(String name) {
         String sql = "SELECT * FROM projects WHERE project_name = ?";
@@ -149,21 +189,6 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         return Optional.empty();
     }
 
-    @Override
-    public List<Project> getAllProjects() {
-        List<Project> projects = new ArrayList<>();
-        String sql = "SELECT * FROM projects";
-        try (Connection conn = dbConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                projects.add(mapRowToProject(rs));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return projects;
-    }
 
 
 

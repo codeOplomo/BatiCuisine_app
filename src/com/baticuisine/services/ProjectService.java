@@ -19,10 +19,7 @@ public class ProjectService {
         this.clientRepo = clientRepo;
     }
 
-    public Client findClientByName(String name) {
-        Optional<Client> clientOpt = clientRepo.findByName(name); // Add this method in ClientRepository
-        return clientOpt.orElse(null);
-    }
+
     public Client addClient(String name, String phone, String address, boolean isPro, String projectName, double area, List<Material> materials, List<Workforce> workforces) {
         Client client = new Client(name, phone, address, isPro);
         ProjectState projectState = ProjectState.ONGOING;

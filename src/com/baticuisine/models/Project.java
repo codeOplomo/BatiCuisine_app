@@ -27,15 +27,40 @@ public class Project {
     }
 
     // Constructor for projects retrieved from the database with totalCost
-    public Project(UUID id, String projectName, double profitMargin, double totalCost, double area, ProjectState projectState) {
+    public Project(UUID id, String projectName, double profitMargin, double totalCost, double area, ProjectState projectState, UUID clientId) {
         this.id = id;
         this.projectName = projectName;
         this.profitMargin = profitMargin;
         this.totalCost = totalCost;
         this.area = area; // Initialize area
         this.projectState = projectState;
+        this.clientId = clientId;
         this.components = new ArrayList<>();
     }
+
+    @Override
+    public String toString() {
+        StringBuilder projectDetails = new StringBuilder();
+        projectDetails.append("Project Name: ").append(projectName).append("\n")
+                .append("Area: ").append(area).append(" sq.m.\n")
+                .append("Profit Margin: ").append(profitMargin * 100).append("%\n")
+                .append("Total Cost: ").append(totalCost).append("\n")
+                .append("State: ").append(projectState).append("\n")
+                .append("Client ID: ").append(clientId).append("\n")
+                .append("Components: ").append(components.size()).append("\n");
+
+        if (components != null && !components.isEmpty()) {
+            // Loop through the components and append their details
+            for (Component component : components) {
+                projectDetails.append(component.toString()).append("\n"); // Call component's toString method
+            }
+        } else {
+            projectDetails.append("No components available for this project.");
+        }
+
+        return projectDetails.toString();
+    }
+
 
     // Method to calculate the total project cost
     public double calculateTotalCost() {
@@ -52,10 +77,6 @@ public class Project {
         return finalCost;
     }
 
-    // Add a component to the project (can be either Material or Workforce)
-    public void addComponent(Component component) {
-        this.components.add(component);
-    }
 
     // Getters and Setters
     public UUID getId() {
@@ -94,7 +115,7 @@ public class Project {
         this.clientId = id;
     }
 
-    public Object getClientId() {
+    public UUID getClientId() {
         return clientId;
     }
 }

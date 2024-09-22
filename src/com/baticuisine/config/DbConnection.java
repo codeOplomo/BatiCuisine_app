@@ -22,15 +22,21 @@ public class DbConnection {
     }
 
     public static synchronized DbConnection getInstance() {
-        try {
-            if (instance == null || instance.getConnection() == null || instance.getConnection().isClosed()) {
-                instance = new DbConnection();
+        if (instance == null) {
+            instance = new DbConnection();
+        } else {
+            try {
+                if (instance.getConnection() == null || instance.getConnection().isClosed()) {
+                    System.err.println("Re-establishing the connection...");
+                    instance = new DbConnection(); // Re-initialize only if the connection is closed or null
+                }
+            } catch (SQLException e) {
+                System.err.println("Error while checking connection state: " + e.getMessage());
             }
-        } catch (SQLException e) {
-            System.err.println("Error while checking connection: " + e.getMessage());
         }
         return instance;
     }
+
 
     public Connection getConnection() {
         return connection;

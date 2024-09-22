@@ -20,6 +20,12 @@ public class Workforce extends Component {
         return workforceCost;
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + ", Hourly Rate: " + hourlyRate + ", Work Hours: " + workHours;
+    }
+
+
     // Getters and Setters
     public double getHourlyRate() {
         return hourlyRate;

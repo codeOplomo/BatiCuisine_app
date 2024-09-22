@@ -1,17 +1,27 @@
 package com.baticuisine.utils.menus.submenus;
 
+import com.baticuisine.models.Component;
+import com.baticuisine.services.ClientService;
 import com.baticuisine.services.ProjectService;
 import com.baticuisine.repository.ProjectRepository;
 import com.baticuisine.repository.ClientRepository;
 import com.baticuisine.utils.inputs.InputHandler;
 import com.baticuisine.utils.menus.Menu;
 
+import java.util.List;
+
 public class MainMenuImpl implements Menu {
     private final ProjectService projectService;
+    private final ClientService clientService;
     private final InputHandler inputHandler;
+    private final ProjectRepository projectRepo;
+    private final ClientRepository clientRepo;
 
     public MainMenuImpl(ProjectRepository projectRepo, ClientRepository clientRepo) {
+        this.projectRepo = projectRepo;  // Save references to the repositories
+        this.clientRepo = clientRepo;
         this.projectService = new ProjectService(projectRepo, clientRepo);
+        this.clientService = new ClientService(clientRepo);
         this.inputHandler = InputHandler.getInstance(); // Access singleton instance
     }
 
@@ -28,7 +38,8 @@ public class MainMenuImpl implements Menu {
 
             switch (choice) {
                 case 1:
-                    ProjectMenuImpl projectMenu = new ProjectMenuImpl(projectService);
+                    // Pass projectRepo and clientRepo to ProjectMenuImpl constructor
+                    ProjectMenuImpl projectMenu = new ProjectMenuImpl(projectRepo, clientRepo);
                     projectMenu.showMenu();
                     break;
                 case 2:
@@ -49,10 +60,17 @@ public class MainMenuImpl implements Menu {
 
     private void displayExistingProjects() {
         System.out.println("--- Affichage des Projets Existants ---");
-        projectService.getAllProjects().forEach(System.out::println);
+        projectService.getAllProjects().forEach(project -> {
+            System.out.println(project); // Calls the toString() method of Project
+
+            System.out.println("--- ++++++++++++++++++++++++++++++ ---");
+        });
     }
+
+
 
     private void calculateProjectCost() {
         // Implementation of cost calculation logic
     }
 }
+

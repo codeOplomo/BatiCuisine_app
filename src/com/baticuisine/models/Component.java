@@ -18,6 +18,12 @@ public abstract class Component {
 
     public abstract double calculateCost();
 
+    @Override
+    public String toString() {
+        return "---------- TYPE: " + componentType + ", Name: " + name;
+    }
+
+
     // Getters and Setters
     public UUID getId() {
         return id;

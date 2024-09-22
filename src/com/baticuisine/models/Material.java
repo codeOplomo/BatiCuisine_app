@@ -22,6 +22,12 @@ public class Material extends Component {
         return materialCost;
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + ", Unit Cost: " + unitCost + ", Quantity: " + quantity;
+    }
+
+
     // Getters and Setters
     public double getUnitCost() {
         return unitCost;
