@@ -21,45 +21,25 @@ public class ComponentRepositoryImpl implements ComponentRepository {
         this.dbConnection = DbConnection.getInstance();
     }
 
+    @Override
     public List<Component> fetchComponentsForProject(UUID projectId) {
         List<Component> components = new ArrayList<>();
         String sql = "SELECT c.*, m.unit_cost, m.quantity, m.transport_cost, m.quality_coefficient, " +
                 "w.hourly_rate, w.work_hours, w.worker_productivity " +
                 "FROM components c " +
-                "LEFT JOIN materials m ON c.id = m.id " +
-                "LEFT JOIN workforces w ON c.id = w.id " +
+                "LEFT JOIN materials m ON c.id = m.id AND c.component_type = 'Material' " +
+                "LEFT JOIN workforces w ON c.id = w.id AND c.component_type = 'Workforce' " +
                 "WHERE c.project_id = ?";
 
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setObject(1, projectId);
+        Connection conn = dbConnection.getConnection();
 
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setObject(1, projectId);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                String componentType = rs.getString("component_type");
-                if (componentType.equals("Material")) {
-                    Material material = new Material(
-                            rs.getString("name"),
-                            componentType,
-                            rs.getDouble("tva_rate"),
-                            rs.getDouble("unit_cost"), // Now it should be available
-                            rs.getInt("quantity"),
-                            rs.getDouble("transport_cost"),
-                            rs.getDouble("quality_coefficient")
-                    );
-                    components.add(material);
-                } else if (componentType.equals("Workforce")) {
-                    Workforce workforce = new Workforce(
-                            rs.getString("name"),
-                            componentType,
-                            rs.getDouble("tva_rate"),
-                            rs.getDouble("hourly_rate"),
-                            rs.getInt("work_hours"),
-                            rs.getDouble("worker_productivity")
-                    );
-                    components.add(workforce);
-                }
+                Component component = mapRowToComponent(rs);
+                components.add(component);
             }
 
         } catch (SQLException e) {
@@ -70,4 +50,29 @@ public class ComponentRepositoryImpl implements ComponentRepository {
     }
 
 
+
+    public Component mapRowToComponent(ResultSet rs) throws SQLException {
+        UUID id = (UUID) rs.getObject("id");
+        String name = rs.getString("name");
+        String componentType = rs.getString("component_type");
+        double tvaRate = rs.getDouble("tva_rate");
+
+        if ("Material".equals(componentType)) {
+            double unitCost = rs.getDouble("unit_cost");
+            int quantity = rs.getInt("quantity");
+            double transportCost = rs.getDouble("transport_cost");
+            double qualityCoefficient = rs.getDouble("quality_coefficient");
+
+            return new Material(id, name, componentType, tvaRate, unitCost, quantity, transportCost, qualityCoefficient);
+
+        } else if ("Workforce".equals(componentType)) {
+            double hourlyRate = rs.getDouble("hourly_rate");
+            int workHours = rs.getInt("work_hours");
+            double workerProductivity = rs.getDouble("worker_productivity");
+
+            return new Workforce(id, name, componentType, tvaRate, hourlyRate, workHours, workerProductivity);
+        }
+
+        throw new SQLException("Unknown component type: " + componentType);
+    }
 }

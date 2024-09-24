@@ -3,58 +3,80 @@ package com.baticuisine.services;
 import com.baticuisine.models.*;
 import com.baticuisine.models.enumerations.ProjectState;
 import com.baticuisine.repository.ClientRepository;
+import com.baticuisine.repository.ComponentRepository;
 import com.baticuisine.repository.ProjectRepository;
 
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class ProjectService {
 
     private final ProjectRepository projectRepo;
-    private final ClientRepository clientRepo;
+    private final ComponentRepository componentRepo;
+    private final ClientService clientService;
 
-    public ProjectService(ProjectRepository projectRepo, ClientRepository clientRepo) {
+    public ProjectService(ProjectRepository projectRepo, ComponentRepository componentRepo, ClientService clientService) {
         this.projectRepo = projectRepo;
-        this.clientRepo = clientRepo;
+        this.componentRepo = componentRepo;
+        this.clientService = clientService;
     }
 
+    public Optional<Project> findByName(String projectName) {
+        Optional<Project> projectOptional = projectRepo.findByName(projectName);
 
-    public Client addClient(String name, String phone, String address, boolean isPro, String projectName, double area, List<Material> materials, List<Workforce> workforces) {
-        Client client = new Client(name, phone, address, isPro);
-        ProjectState projectState = ProjectState.ONGOING;
-        double profitMargin = 0.2;
+        if (projectOptional.isPresent()) {
+            Project project = projectOptional.get();
+            List<Component> components = componentRepo.fetchComponentsForProject(project.getId());
+            project.setComponents(components);
+        }
 
-        // Create a new project associated with the client
-        Project project = new Project(projectName, profitMargin, area, projectState);
-
-        // Save both client and project along with materials and workforces in the repository
-        Optional<Client> savedClient = clientRepo.addClientProjectAndComponents(client, project, materials, workforces);
-
-        // Return the saved client or null if there was an issue
-        return savedClient.orElse(null);
+        return projectOptional;
     }
 
+    public Optional<Project> findById(UUID projectId) {
+        Optional<Project> projectOptional = projectRepo.findById(projectId);
 
+        if (projectOptional.isPresent()) {
+            Project project = projectOptional.get();
+            List<Component> components = componentRepo.fetchComponentsForProject(project.getId());
+            project.setComponents(components);
+        }
 
-    public Project addProjectForClient(Client client, String projectName, double area) {
-        ProjectState projectState = ProjectState.ONGOING;
-        double profitMargin = 0.2;
-
-        // Create the project and associate it with the client
-        Project project = new Project(projectName, profitMargin, area, projectState);
-        project.setClientId(client.getId());
-
-        // Save the project to the database
-        Optional<Project> savedProject = projectRepo.addProject(project);
-
-        // Optionally add the project to the client's list for in-memory tracking
-        client.addProject(project);
-
-        return savedProject.orElse(null); // Return the project if needed
+        return projectOptional;
     }
 
     public List<Project> getAllProjects() {
         return projectRepo.getAllProjects();
     }
+
+    public Project addProjectForClient(Client client, String projectName, double area) {
+        ProjectState projectState = ProjectState.ONGOING;
+        UUID clientId = client.getId();
+
+        Project project = new Project(projectName, area, projectState, clientId);
+
+        Optional<Project> savedProject = projectRepo.addProject(project);
+
+        client.addProject(project);
+
+        return savedProject.orElse(null);
+    }
+
+    public void updateProjectCostInfo(Project project) {
+        Optional<Project> updatedProject = projectRepo.updateProject(project);
+
+        if (updatedProject.isPresent()) {
+            System.out.println("Project cost info updated successfully.");
+        } else {
+            System.out.println("Failed to update project cost info.");
+        }
+    }
+
+    public String getClientNameById(UUID clientId) {
+        Client client = clientService.findClientById(clientId);
+        return (client != null) ? client.getName() : null;
+    }
 }
+

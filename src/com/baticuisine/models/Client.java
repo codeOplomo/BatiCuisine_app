@@ -14,7 +14,7 @@ public class Client {
     private List<Project> projects;
 
     public Client(String name, String phone, String address, boolean isPro) {
-        this.id = UUID.randomUUID(); // Generate a UUID for the client
+        this.id = UUID.randomUUID();
         this.name = name;
         this.phone = phone;
         this.address = address;

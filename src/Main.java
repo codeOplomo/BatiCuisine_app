@@ -10,8 +10,7 @@ public class Main {
 
         ApplicationFactory config = new ApplicationFactory();
 
-        MainMenuImpl mainMenu = MenuFactory.createMainMenu(config.getProjectRepository(), config.getClientRepository());
+        MainMenuImpl mainMenu = MenuFactory.createMainMenu(config.getProjectRepository(), config.getClientRepository(), config.getComponentRepository(), config.getClientService());
         mainMenu.showMenu();
-
     }
 }

@@ -9,6 +9,7 @@ import java.util.UUID;
 public interface DevisRepository {
     Optional<Devis> findById(UUID id);
     List<Devis> findAll();
-    Devis save(Devis devis);
+    Optional<Devis> save(Devis devis);
+    Optional<Devis> updateStatus(UUID devisId, boolean isAccepted);
     boolean deleteById(UUID id);
 }

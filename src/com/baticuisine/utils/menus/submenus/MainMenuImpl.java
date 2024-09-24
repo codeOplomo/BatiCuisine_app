@@ -1,28 +1,31 @@
 package com.baticuisine.utils.menus.submenus;
 
-import com.baticuisine.models.Component;
-import com.baticuisine.services.ClientService;
-import com.baticuisine.services.ProjectService;
-import com.baticuisine.repository.ProjectRepository;
-import com.baticuisine.repository.ClientRepository;
-import com.baticuisine.utils.inputs.InputHandler;
-import com.baticuisine.utils.menus.Menu;
 
-import java.util.List;
+        import com.baticuisine.manager.ProjectManager;
+        import com.baticuisine.repository.ClientRepository;
+        import com.baticuisine.repository.ComponentRepository;
+        import com.baticuisine.repository.ProjectRepository;
+        import com.baticuisine.services.ClientService;
+        import com.baticuisine.services.ProjectService;
+        import com.baticuisine.utils.inputs.InputHandler;
+        import com.baticuisine.utils.menus.Menu;
 
 public class MainMenuImpl implements Menu {
-    private final ProjectService projectService;
-    private final ClientService clientService;
     private final InputHandler inputHandler;
-    private final ProjectRepository projectRepo;
+    private final ProjectManager projectManager;
     private final ClientRepository clientRepo;
+    private final ProjectRepository projectRepo;
+    private final ComponentRepository componentRepo;
+    private final ClientService clientService;
 
-    public MainMenuImpl(ProjectRepository projectRepo, ClientRepository clientRepo) {
-        this.projectRepo = projectRepo;  // Save references to the repositories
-        this.clientRepo = clientRepo;
-        this.projectService = new ProjectService(projectRepo, clientRepo);
+    public MainMenuImpl(ProjectRepository projectRepo, ClientRepository clientRepo, ComponentRepository componentRepo, ClientService clientService) {
         this.clientService = new ClientService(clientRepo);
-        this.inputHandler = InputHandler.getInstance(); // Access singleton instance
+        ProjectService projectService = new ProjectService(projectRepo, componentRepo, clientService);
+        this.projectManager = new ProjectManager(projectService, projectRepo, componentRepo, clientService);
+        this.projectRepo = projectRepo;
+        this.componentRepo = componentRepo;
+        this.clientRepo = clientRepo;
+        this.inputHandler = InputHandler.getInstance();
     }
 
     @Override
@@ -38,15 +41,14 @@ public class MainMenuImpl implements Menu {
 
             switch (choice) {
                 case 1:
-                    // Pass projectRepo and clientRepo to ProjectMenuImpl constructor
-                    ProjectMenuImpl projectMenu = new ProjectMenuImpl(projectRepo, clientRepo);
+                    ProjectMenuImpl projectMenu = new ProjectMenuImpl(projectRepo, clientRepo, componentRepo, clientService);
                     projectMenu.showMenu();
                     break;
                 case 2:
-                    displayExistingProjects();
+                    projectManager.displayExistingProjects();
                     break;
                 case 3:
-                    calculateProjectCost();
+                    projectManager.calculateProjectCost();
                     break;
                 case 4:
                     System.out.println("Au revoir !");
@@ -56,21 +58,6 @@ public class MainMenuImpl implements Menu {
                     System.out.println("Option invalide. Veuillez réessayer.");
             }
         }
-    }
-
-    private void displayExistingProjects() {
-        System.out.println("--- Affichage des Projets Existants ---");
-        projectService.getAllProjects().forEach(project -> {
-            System.out.println(project); // Calls the toString() method of Project
-
-            System.out.println("--- ++++++++++++++++++++++++++++++ ---");
-        });
-    }
-
-
-
-    private void calculateProjectCost() {
-        // Implementation of cost calculation logic
     }
 }
 

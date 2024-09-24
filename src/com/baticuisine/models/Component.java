@@ -16,12 +16,21 @@ public abstract class Component {
         this.tvaRate = tvaRate;
     }
 
+    public Component(UUID id, String name, String componentType, double tvaRate) {
+        this.id = id; // Use the UUID passed from the Material constructor
+        this.name = name;
+        this.componentType = componentType;
+        this.tvaRate = tvaRate;
+    }
+
+
     public abstract double calculateCost();
 
     @Override
     public String toString() {
-        return "---------- TYPE: " + componentType + ", Name: " + name;
+        return String.format("---------- TYPE: %-10s | Name: %s", componentType, name);
     }
+
 
 
     // Getters and Setters
@@ -39,5 +48,17 @@ public abstract class Component {
 
     public double getTvaRate() {
         return tvaRate;
+    }
+
+    public void setTvaRate(double tvaRate) {
+        this.tvaRate = tvaRate;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 }

@@ -7,12 +7,11 @@ public class InputHandler {
     private static InputHandler instance;
     private final Scanner scanner;
 
-    // Private constructor to prevent instantiation from other classes
+
     private InputHandler() {
         this.scanner = new Scanner(System.in);
     }
 
-    // Static method to get the single instance of the class
     public static InputHandler getInstance() {
         if (instance == null) {
             instance = new InputHandler();
@@ -27,11 +26,11 @@ public class InputHandler {
             try {
                 System.out.print(prompt);
                 input = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
+                scanner.nextLine();
                 valid = true;
             } catch (InputMismatchException e) {
                 System.out.println("Entrée invalide. Veuillez entrer un nombre entier.");
-                scanner.nextLine(); // Clear the invalid input
+                scanner.nextLine();
             }
         }
         return input;
@@ -49,17 +48,17 @@ public class InputHandler {
             try {
                 System.out.print(prompt);
                 input = scanner.nextDouble();
-                scanner.nextLine(); // Consume newline
+                scanner.nextLine();
                 valid = true;
             } catch (InputMismatchException e) {
                 System.out.println("Entrée invalide. Veuillez entrer un nombre décimal.");
-                scanner.nextLine(); // Clear the invalid input
+                scanner.nextLine();
             }
         }
         return input;
     }
 
-    // Close the scanner when done
+
     public void close() {
         scanner.close();
     }

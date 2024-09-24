@@ -1,5 +1,7 @@
 package com.baticuisine.models;
 
+import java.util.UUID;
+
 public class Material extends Component {
 
     private double unitCost;
@@ -8,12 +10,21 @@ public class Material extends Component {
     private double qualityCoefficient;
 
     public Material(String name, String componentType, double tvaRate, double unitCost, int quantity, double transportCost, double qualityCoefficient) {
-        super(name, componentType, tvaRate); // Call the constructor of the abstract Component class
+        super(name, componentType, tvaRate);
         this.unitCost = unitCost;
         this.quantity = quantity;
         this.transportCost = transportCost;
         this.qualityCoefficient = qualityCoefficient;
     }
+
+    public Material(UUID id, String name, String componentType, double tvaRate, double unitCost, int quantity, double transportCost, double qualityCoefficient) {
+        super(id, name, componentType, tvaRate);
+        this.unitCost = unitCost;
+        this.quantity = quantity;
+        this.transportCost = transportCost;
+        this.qualityCoefficient = qualityCoefficient;
+    }
+
 
     @Override
     public double calculateCost() {
@@ -24,7 +35,8 @@ public class Material extends Component {
 
     @Override
     public String toString() {
-        return super.toString() + ", Unit Cost: " + unitCost + ", Quantity: " + quantity;
+        return String.format("%s, Unit Cost: %.2f, Quantity: %d",
+                super.toString(), unitCost, quantity);
     }
 
 
@@ -44,5 +56,22 @@ public class Material extends Component {
     public double getQualityCoefficient() {
         return qualityCoefficient;
     }
+
+    public void setQualityCoefficient(double qualityCoefficient) {
+        this.qualityCoefficient = qualityCoefficient;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public void setUnitCost(double unitCost) {
+        this.unitCost = unitCost;
+    }
+
+    public void setTransportCost(double transportCost) {
+        this.transportCost = transportCost;
+    }
+
 
 }

@@ -1,5 +1,7 @@
 package com.baticuisine.models;
 
+import java.util.UUID;
+
 public class Workforce extends Component {
 
     private double hourlyRate;
@@ -7,7 +9,14 @@ public class Workforce extends Component {
     private double workerProductivity;
 
     public Workforce(String name, String componentType, double tvaRate, double hourlyRate, int workHours, double workerProductivity) {
-        super(name, componentType, tvaRate); // Call the constructor of the abstract Component class
+        super(name, componentType, tvaRate);
+        this.hourlyRate = hourlyRate;
+        this.workHours = workHours;
+        this.workerProductivity = workerProductivity;
+    }
+
+    public Workforce(UUID id, String name, String componentType, double tvaRate, double hourlyRate, int workHours, double workerProductivity) {
+        super(id, name, componentType, tvaRate);
         this.hourlyRate = hourlyRate;
         this.workHours = workHours;
         this.workerProductivity = workerProductivity;
@@ -16,14 +25,16 @@ public class Workforce extends Component {
     @Override
     public double calculateCost() {
         double workforceCost = (hourlyRate * workHours) * workerProductivity;
-        workforceCost += workforceCost * getTvaRate(); // Add TVA
+        workforceCost += workforceCost * getTvaRate();
         return workforceCost;
     }
 
     @Override
     public String toString() {
-        return super.toString() + ", Hourly Rate: " + hourlyRate + ", Work Hours: " + workHours;
+        return String.format("%s, Hourly Rate: %.2f, Work Hours: %d",
+                super.toString(), hourlyRate, workHours);
     }
+
 
 
     // Getters and Setters
@@ -37,5 +48,17 @@ public class Workforce extends Component {
 
     public double getWorkerProductivity() {
         return workerProductivity;
+    }
+
+    public void setWorkerProductivity(double workerProductivity) {
+        this.workerProductivity = workerProductivity;
+    }
+
+    public void setWorkHours(int workHours) {
+        this.workHours = workHours;
+    }
+
+    public void setHourlyRate(double hourlyRate) {
+        this.hourlyRate = hourlyRate;
     }
 }

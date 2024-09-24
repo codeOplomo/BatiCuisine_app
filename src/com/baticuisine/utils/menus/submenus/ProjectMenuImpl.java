@@ -5,6 +5,7 @@ import com.baticuisine.models.Project;
 import com.baticuisine.models.Material;
 import com.baticuisine.models.Workforce;
 import com.baticuisine.repository.ClientRepository;
+import com.baticuisine.repository.ComponentRepository;
 import com.baticuisine.repository.ProjectRepository;
 import com.baticuisine.services.ClientService;
 import com.baticuisine.services.ProjectService;
@@ -20,13 +21,13 @@ public class ProjectMenuImpl implements Menu {
     private final ClientService clientService;
     private final InputHandler inputHandler;
 
-    public ProjectMenuImpl(ProjectRepository projectRepo, ClientRepository clientRepo) {
-        this.projectService = new ProjectService(projectRepo, clientRepo);
+    public ProjectMenuImpl(ProjectRepository projectRepo, ClientRepository clientRepo, ComponentRepository componentRepo, ClientService clientService) {
+        this.projectService = new ProjectService(projectRepo, componentRepo, clientService);
         this.clientService = new ClientService(clientRepo);
-        this.inputHandler = InputHandler.getInstance(); // Access singleton instance
+        this.inputHandler = InputHandler.getInstance();
     }
 
-    @Override
+
     public void showMenu() {
         System.out.println("--- Recherche de client ---");
         System.out.println("1. Chercher un client existant");
@@ -35,16 +36,22 @@ public class ProjectMenuImpl implements Menu {
         int choice = inputHandler.getIntInput("Choisissez une option : ");
         Client client = null;
 
-        if (choice == 1) {
-            client = searchExistingClient();
-            if (client != null) {
-                String addProject = inputHandler.getStringInput("Souhaitez-vous ajouter un nouveau projet pour ce client ? (y/n) : ");
-                if (addProject.equalsIgnoreCase("y")) {
-                    addNewProjectForClient(client);
+        switch (choice) {
+            case 1:
+                client = searchExistingClient();
+                if (client != null) {
+                    String addProject = inputHandler.getStringInput("Souhaitez-vous ajouter un nouveau projet pour ce client ? (y/n) : ");
+                    if (addProject.equalsIgnoreCase("y")) {
+                        addProjectForExistingClient(client);
+                    }
                 }
-            }
-        } else if (choice == 2) {
-            client = addNewClientAndProject();
+                break;
+            case 2:
+                client = addClientAndProject();
+                break;
+            default:
+                System.out.println("Choix invalide.");
+                return;
         }
 
         if (client != null) {
@@ -72,32 +79,6 @@ public class ProjectMenuImpl implements Menu {
         return null;
     }
 
-    private Client addNewClientAndProject() {
-        String name = inputHandler.getStringInput("Entrez le nom du client : ");
-        String phone = inputHandler.getStringInput("Entrez le numéro de téléphone : ");
-        String address = inputHandler.getStringInput("Entrez l'adresse : ");
-        boolean isPro = inputHandler.getBooleanInput("Est-ce un client professionnel ? (true/false) : ");
-        String projectName = inputHandler.getStringInput("Entrez le nom du projet : ");
-        double area = inputHandler.getDoubleInput("Entrez la surface de la cuisine (en m²) : ");
-
-        List<Material> materials = addMaterials(); // Gather materials
-        List<Workforce> workforces = addWorkforce(); // Gather workforces
-
-        return projectService.addClient(name, phone, address, isPro, projectName, area, materials, workforces);
-    }
-
-    private void addNewProjectForClient(Client client) {
-        String projectName = inputHandler.getStringInput("Entrez le nom du projet : ");
-        double area = inputHandler.getDoubleInput("Entrez la surface de la cuisine (en m²) : ");
-
-        Project project = projectService.addProjectForClient(client, projectName, area);
-        if (project != null) {
-            System.out.println("Projet ajouté avec succès pour le client " + client.getName() + " !");
-        } else {
-            System.out.println("Erreur lors de l'ajout du projet.");
-        }
-    }
-
     private List<Material> addMaterials() {
         List<Material> materials = new ArrayList<>();
         boolean continueAddingMaterials;
@@ -119,7 +100,6 @@ public class ProjectMenuImpl implements Menu {
         return materials;
     }
 
-
     private List<Workforce> addWorkforce() {
         List<Workforce> workforces = new ArrayList<>();
         boolean continueAddingWorkforce;
@@ -138,5 +118,61 @@ public class ProjectMenuImpl implements Menu {
         } while (continueAddingWorkforce);
 
         return workforces;
+    }
+
+    private Client addProjectForClient(Client existingClient, String name, String phone, String address, boolean isPro, String projectName, double area, List<Material> materials, List<Workforce> workforces) {
+        Client client;
+        if (existingClient != null) {
+            client = existingClient;
+        } else {
+            client = new Client(name, phone, address, isPro);
+        }
+
+        Project project = projectService.addProjectForClient(client, projectName, area);
+        if (project != null) {
+            client.addProject(project);
+            System.out.println("Projet ajouté avec succès pour le client " + client.getName() + " !");
+        } else {
+            System.out.println("Erreur lors de l'ajout du projet.");
+            return null;
+        }
+
+        if (existingClient == null) {
+            return clientService.addClient(name, phone, address, isPro, projectName, area, materials, workforces);
+        }
+
+        return client;
+    }
+
+    private Client addClientAndProject() {
+        String name = inputHandler.getStringInput("Entrez le nom du client : ");
+        String phone = inputHandler.getStringInput("Entrez le numéro de téléphone : ");
+        String address = inputHandler.getStringInput("Entrez l'adresse : ");
+        boolean isPro = inputHandler.getBooleanInput("Est-ce un client professionnel ? (true/false) : ");
+
+        List<Material> materials = addMaterials();
+        List<Workforce> workforces = addWorkforce();
+
+        String projectName = inputHandler.getStringInput("Entrez le nom du projet : ");
+        double area = inputHandler.getDoubleInput("Entrez la surface de la cuisine (en m²) : ");
+
+        Client client = clientService.addClient(name, phone, address, isPro, projectName, area, materials, workforces);
+
+        if (client == null) {
+            System.out.println("Erreur lors de l'ajout du client.");
+            return null;
+        }
+
+        return client;
+    }
+
+    private void addProjectForExistingClient(Client client) {
+        String projectName = inputHandler.getStringInput("Entrez le nom du projet : ");
+        double area = inputHandler.getDoubleInput("Entrez la surface de la cuisine (en m²) : ");
+
+        List<Material> materials = addMaterials();
+        List<Workforce> workforces = addWorkforce();
+
+        addProjectForClient(client, null, null, null, false, projectName, area, materials, workforces);
     }
 }
