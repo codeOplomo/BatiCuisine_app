@@ -1,5 +1,8 @@
 package com.baticuisine.utils.inputs;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -19,6 +22,46 @@ public class InputHandler {
         return instance;
     }
 
+    public LocalDate getDateInput(String prompt, LocalDate afterDate) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate date = null;
+        boolean valid = false;
+
+        while (!valid) {
+            System.out.print(prompt);
+            try {
+                String input = scanner.nextLine();
+                date = LocalDate.parse(input, formatter);
+
+                if (afterDate != null && !date.isAfter(afterDate)) {
+                    System.out.println("La date doit être après " + afterDate.format(formatter) + ". Veuillez réessayer.");
+                } else {
+                    valid = true;
+                }
+            } catch (DateTimeParseException e) {
+                System.out.println("Format de date invalide. Veuillez réessayer (format : jj/mm/aaaa) : ");
+            }
+        }
+        return date;
+    }
+    public boolean getBooleanInput(String prompt) {
+        boolean valid = false;
+        boolean input = false;
+        while (!valid) {
+            System.out.print(prompt);
+            String response = scanner.nextLine();
+            if (response.equalsIgnoreCase("true")) {
+                input = true;
+                valid = true;
+            } else if (response.equalsIgnoreCase("false")) {
+                input = false;
+                valid = true;
+            } else {
+                System.out.println("Entrée invalide. Veuillez entrer 'true' ou 'false'.");
+            }
+        }
+        return input;
+    }
     public int getIntInput(String prompt) {
         int input = -1;
         boolean valid = false;
@@ -63,22 +106,4 @@ public class InputHandler {
         scanner.close();
     }
 
-    public boolean getBooleanInput(String prompt) {
-        boolean valid = false;
-        boolean input = false;
-        while (!valid) {
-            System.out.print(prompt);
-            String response = scanner.nextLine();
-            if (response.equalsIgnoreCase("true")) {
-                input = true;
-                valid = true;
-            } else if (response.equalsIgnoreCase("false")) {
-                input = false;
-                valid = true;
-            } else {
-                System.out.println("Entrée invalide. Veuillez entrer 'true' ou 'false'.");
-            }
-        }
-        return input;
-    }
 }

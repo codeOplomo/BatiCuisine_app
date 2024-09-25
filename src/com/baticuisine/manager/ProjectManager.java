@@ -45,13 +45,19 @@ public class ProjectManager {
             }
         }
 
-        System.out.print("Entrez la date de validité du devis (format : jj/mm/aaaa) : ");
         LocalDate validityDate;
         while (true) {
+            System.out.print("Entrez la date de validité du devis (format : jj/mm/aaaa) : ");
             try {
                 String validityInput = scanner.nextLine();
                 validityDate = LocalDate.parse(validityInput, formatter);
-                break;
+
+                // Validate that validityDate is after emissionDate
+                if (validityDate.isBefore(emissionDate)) {
+                    System.out.println("La date de validité doit être après la date d'émission. Veuillez réessayer : ");
+                } else {
+                    break;
+                }
             } catch (DateTimeParseException e) {
                 System.out.println("Format de date invalide. Veuillez réessayer (format : jj/mm/aaaa) : ");
             }
@@ -67,7 +73,6 @@ public class ProjectManager {
             if (optionalDevis.isPresent()) {
                 Devis savedDevis = optionalDevis.get();
                 System.out.println("Devis enregistré avec succès !");
-
 
                 System.out.print("Souhaitez-vous accepter ce devis ? (y/n) : ");
                 boolean acceptQuote = scanner.next().equalsIgnoreCase("y");
@@ -90,6 +95,7 @@ public class ProjectManager {
             System.out.println("Création du devis annulée.");
         }
     }
+
 
     private void displayQuoteWithProjectDetails(Project project, Devis devis) {
         System.out.println("----- Détails du Projet -----");
